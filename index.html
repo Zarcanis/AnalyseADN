@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Séquençage ADN</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        .sequence-output {
+            font-family: monospace;
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #loading {
+            font-size: 20px;
+            color: #f44336;
+            margin-top: 20px;
+        }
+        #progress-bar-container {
+            width: 100%;
+            background-color: #ddd;
+            height: 30px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #4CAF50;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Simulateur de Séquençage ADN</h1>
+        <label for="sequenceInput">Entrez la séquence ADN à analyser :</label><br>
+        <textarea id="sequenceInput" rows="4" cols="50"></textarea><br><br>
+        <button onclick="startAnalysis()">Lancer l'analyse de la séquence ADN</button>
+
+        <div id="loading" style="display: none;">Analyse en cours...</div>
+        <div id="progress-bar-container" style="display: none;">
+            <div id="progress-bar"></div>
+        </div>
+        <div id="result" class="sequence-output"></div>
+    </div>
+
+    <script>
+        // Dictionnaire inverse pour le décryptage
+        const reverseCodonDict = {
+            'AAA': 'A', 'AAC': 'B', 'AAG': 'C', 'AAT': 'D',
+            'ACA': 'E', 'ACC': 'F', 'ACG': 'G', 'ACT': 'H',
+            'AGA': 'I', 'AGC': 'J', 'AGG': 'K', 'AGT': 'L',
+            'ATA': 'M', 'ATC': 'N', 'ATG': 'O', 'ATT': 'P',
+            'CAA': 'Q', 'CAC': 'R', 'CAG': 'S', 'CAT': 'T',
+            'CCA': 'U', 'CCC': 'V', 'CCG': 'W', 'CCT': 'X',
+            'CGA': 'Y', 'CGC': 'Z', 'CGG': ' '
+        };
+
+        // Fonction pour simuler l'animation de séquençage
+        function animateSequencing(duration) {
+            return new Promise((resolve) => {
+                let progress = 0;
+                const codons = Object.keys(reverseCodonDict);
+                const interval = setInterval(() => {
+                    const randomCodon = codons[Math.floor(Math.random() * codons.length)];
+                    document.getElementById("result").textContent += `${randomCodon} `;
+                    progress += 1;
+                    document.getElementById("progress-bar").style.width = (progress / (duration * 10)) * 100 + '%';
+                    if (progress >= duration * 10) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        // Fonction pour analyser la séquence
+        function startAnalysis() {
+            const sequence = document.getElementById("sequenceInput").value.trim();
+            if (!sequence) {
+                alert("Veuillez entrer une séquence ADN.");
+                return;
+            }
+
+            // Afficher "Analyse en cours..." et cacher les résultats
+            document.getElementById("loading").style.display = "block";
+            document.getElementById("progress-bar-container").style.display = "block";
+            document.getElementById("result").textContent = "";
+
+            const codons = sequence.split(' '); // Séparer la séquence en codons
+
+            animateSequencing(3).then(() => {
+                let decodedMessage = '';
+                codons.forEach(codon => {
+                    decodedMessage += reverseCodonDict[codon] || '?';
+                });
+                document.getElementById("loading").style.display = "none";
+                document.getElementById("progress-bar-container").style.display = "none";
+                document.getElementById("result").textContent = "Séquence analysée :\n" + decodedMessage;
+            });
+        }
+    </script>
+
+</body>
+</html>
